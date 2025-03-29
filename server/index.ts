@@ -39,7 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Register routes
+// Register routes and serve static files
 (async () => {
   await registerRoutes(app);
   serveStatic(app);
@@ -49,30 +49,35 @@ app.use((req, res, next) => {
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
   const message = err.message || "Internal Server Error";
-
   res.status(status).json({ message });
   throw err;
 });
 
-// If running locally, start an Express server
-if (process.env.NODE_ENV !== "production") {
+// Start the server if this module is the entry point.
+// This will ensure that in production (on Render) the app listens on the correct port.
+if (require.main === module) {
   (async () => {
-    const server = await registerRoutes(app);
-
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
+    // Optionally, you could conditionally setup Vite for development here.
+    if (process.env.NODE_ENV !== "production") {
+      // If not in production, you might want to set up Vite's middleware.
+      // If your registerRoutes returns a server instance, you can use that.
+      const server = await registerRoutes(app);
+      if (app.get("env") === "development") {
+        await setupVite(app, server);
+      } else {
+        serveStatic(app);
+      }
     }
 
-    const port = 5001;
-    server.listen(port, () => {
+    // Use process.env.PORT, which Render sets, with a fallback for local development.
+    const port = process.env.PORT || 5001;
+    app.listen(port, () => {
       log(`Server running on http://localhost:${port}`);
     });
   })();
 }
 
-// Export for Vercel
+// Export for Vercel or other serverless environments.
 export default function handler(req: VercelRequest, res: VercelResponse) {
   return app(req as any, res as any);
 }

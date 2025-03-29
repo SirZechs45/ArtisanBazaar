@@ -55,12 +55,9 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 
 // Start the server if this module is the entry point.
 // This will ensure that in production (on Render) the app listens on the correct port.
-if (require.main === module) {
+if (process.argv[1] === new URL(import.meta.url).pathname) {
   (async () => {
-    // Optionally, you could conditionally setup Vite for development here.
     if (process.env.NODE_ENV !== "production") {
-      // If not in production, you might want to set up Vite's middleware.
-      // If your registerRoutes returns a server instance, you can use that.
       const server = await registerRoutes(app);
       if (app.get("env") === "development") {
         await setupVite(app, server);
@@ -68,8 +65,6 @@ if (require.main === module) {
         serveStatic(app);
       }
     }
-
-    // Use process.env.PORT, which Render sets, with a fallback for local development.
     const port = process.env.PORT || 5001;
     app.listen(port, () => {
       log(`Server running on http://localhost:${port}`);

@@ -53,6 +53,18 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   throw err;
 });
 
+
+// trying to solve file upload issues
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // cookies sent only over HTTPS in production
+    sameSite: 'lax', // or 'none' if you require cross-site cookies with secure:true
+    // domain: 'yourdomain.com', // set this if needed for subdomain issues
+  }
+}));
 // Start the server if this module is the entry point.
 // This will ensure that in production (on Render) the app listens on the correct port.
 if (process.argv[1] === new URL(import.meta.url).pathname) {

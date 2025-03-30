@@ -154,64 +154,70 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Only accept images
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload an image file (JPEG, PNG, etc.)",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      setUploadingImage(true);
-      
-      // Create form data
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      // Upload image
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        // Add image URL to form state
-        const newUrls = [...imageUrls, data.imageUrl];
-        setImageUrls(newUrls);
-        form.setValue("images", newUrls);
-        
+        console.error("Invalid file type:", file.type);
         toast({
-          title: "Image Uploaded",
-          description: "Image has been successfully uploaded",
+            title: "Invalid File Type",
+            description: "Please upload an image file (JPEG, PNG, etc.)",
+            variant: "destructive",
         });
-      } else {
-        throw new Error(data.message || 'Failed to upload image');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "An error occurred while uploading the image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingImage(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+        return;
     }
-  };
+
+    try {
+        console.log("Uploading image:", file.name);
+        setUploadingImage(true);
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('image', file);
+
+        // Upload image
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Image upload failed:", errorData.message);
+            throw new Error(errorData.message || 'Failed to upload image');
+        }
+
+        const data = await response.json();
+        console.log("Image uploaded successfully:", data.imageUrl);
+
+        if (data.success) {
+            // Add image URL to form state
+            const newUrls = [...imageUrls, data.imageUrl];
+            setImageUrls(newUrls);
+            form.setValue("images", newUrls);
+
+            toast({
+                title: "Image Uploaded",
+                description: "Image has been successfully uploaded",
+            });
+        } else {
+            throw new Error(data.message || 'Failed to upload image');
+        }
+    } catch (error: any) {
+        console.error("Error during image upload:", error.message);
+        toast({
+            title: "Upload Failed",
+            description: error.message || "An error occurred while uploading the image",
+            variant: "destructive",
+        });
+    } finally {
+        setUploadingImage(false);
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
+};
 
   const removeImage = (index: number) => {
     const updatedImages = [...imageUrls];

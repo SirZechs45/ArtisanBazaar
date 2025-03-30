@@ -435,32 +435,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/cart/clear', async (req, res) => {
+    try {
+        console.log("Clear cart request received for user:", req.session?.userId);
+
+        const userId = req.session.userId;
+        if (!userId) {
+            console.error("User not authenticated");
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
+        const cleared = await storage.clearCart(userId);
+        if (cleared) {
+            console.log("Cart cleared successfully for user:", userId);
+            res.json({ message: 'Cart cleared successfully' });
+        } else {
+            console.error("Failed to clear cart for user:", userId);
+            res.status(500).json({ message: 'Failed to clear cart' });
+        }
+    } catch (error) {
+        console.error("Error clearing cart:", error.message);
+        res.status(400).json({ message: error.message });
+    }
+});
+
   // Image Upload API
   app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res) => {
     try {
-      // Check if file exists
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
+        console.log("Image upload request received");
 
-      // Return the path to the uploaded file
-      const serverUrl = `${req.protocol}://${req.get('host')}`;
-      const filePath = `/uploads/products/${req.file.filename}`;
-      const fileUrl = `${serverUrl}${filePath}`;
+        // Check if file exists
+        if (!req.file) {
+            console.error("No file uploaded");
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
 
-      res.json({
-        success: true,
-        imageUrl: fileUrl,
-        filePath: filePath
-      });
+        // Log file details
+        console.log("Uploaded file details:", req.file);
+
+        // Return the path to the uploaded file
+        const serverUrl = `${req.protocol}://${req.get('host')}`;
+        const filePath = `/uploads/products/${req.file.filename}`;
+        const fileUrl = `${serverUrl}${filePath}`;
+
+        console.log("File uploaded successfully:", fileUrl);
+
+        res.json({
+            success: true,
+            imageUrl: fileUrl,
+        });
     } catch (error) {
-      res.status(500).json({ 
-        success: false, 
-        message: 'Error uploading file',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+        console.error("Error during image upload:", error.message);
+        res.status(500).json({ message: 'Failed to upload image' });
     }
-  });
+});
 
   // Order Routes
   app.get('/api/orders', isAuthenticated, async (req, res) => {

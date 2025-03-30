@@ -40,6 +40,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log("Request body:", req.body);
+
+    const originalSend = res.send;
+    res.send = function (body) {
+        console.log("Response status:", res.statusCode);
+        console.log("Response body:", body);
+        originalSend.call(this, body);
+    };
+
+    next();
+});
+
 // Register routes and serve static files
 (async () => {
   await registerRoutes(app);

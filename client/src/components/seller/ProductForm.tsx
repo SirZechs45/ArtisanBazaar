@@ -312,56 +312,58 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
             </FormItem>
           )}
         />
-        
+
         <FormField
-          control={form.control}
-          name="images"
-          render={() => (
+        control={form.control}
+        name="images"
+        render={({ field }) => (
             <FormItem>
-              <FormLabel>Product Images</FormLabel>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {imageUrls.map((url, index) => (
-                    <Card key={index} className="relative overflow-hidden">
-                      <Button 
-                        variant="destructive" 
-                        size="icon" 
-                        className="absolute top-2 right-2 h-6 w-6"
-                        type="button"
-                        onClick={() => removeImage(index)}
-                      >
-                        ✕
-                      </Button>
-                      <CardContent className="p-2">
-                        <img 
-                          src={url} 
-                          alt={`Product image ${index + 1}`} 
-                          className="w-full h-24 object-cover rounded"
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  <Card className="border-dashed">
-                    <CardContent className="p-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="w-full h-full min-h-[104px] flex flex-col items-center justify-center"
-                        onClick={handleImageUpload}
-                      >
-                        <span className="text-2xl mb-1">+</span>
-                        <span className="text-sm">Add Image</span>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-                <FormMessage />
-              </div>
+            <FormLabel>Product Images</FormLabel>
+            {/* Hidden input to satisfy accessibility and autofill */}
+            <Input type="hidden" {...field} />
+            <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {imageUrls.map((url, index) => (
+                <Card key={index} className="relative overflow-hidden">
+                <Button 
+                variant="destructive" 
+                size="icon" 
+                className="absolute top-2 right-2 h-6 w-6"
+                type="button"
+                onClick={() => removeImage(index)}
+                >
+                ✕
+                </Button>
+                <CardContent className="p-2">
+                <img 
+                src={url} 
+                alt={`Product image ${index + 1}`} 
+                className="w-full h-24 object-cover rounded"
+                />
+                </CardContent>
+                </Card>
+            ))}
+
+            <Card className="border-dashed">
+            <CardContent className="p-0">
+            <Button
+            type="button"
+            variant="ghost"
+            className="w-full h-full min-h-[104px] flex flex-col items-center justify-center"
+            onClick={handleImageUpload}
+            >
+            <span className="text-2xl mb-1">+</span>
+            <span className="text-sm">Add Image</span>
+            </Button>
+            </CardContent>
+            </Card>
+            </div>
+            <FormMessage />
+            </div>
             </FormItem>
-          )}
+        )}
         />
-        
+
         {/* Hidden file input for image uploading */}
         <input
           type="file"
